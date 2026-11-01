@@ -96,3 +96,11 @@ Trang dùng font Google Fonts (có fallback nếu offline), không yêu cầu c�
 ## Slow zigzag floating gallery
 
 6 photo cards are arranged in an alternating upper/lower line, scrolling right-to-left in 780 seconds per cycle on desktop (680 seconds on mobile). The 6-photo order is shuffled on page load, with photo sources drawn from `data/site.json` memories. Add new photos through the existing memory editor; no need to modify gallery code. For accessibility, reduced-motion settings stop the gallery animation.
+
+
+## Gallery slow-speed fix v4
+Replaced conflicting previous photo animation CSS with one canonical 780-second continuous loop, with two vertically staggered rows. `index.html` uses versioned CSS/JS URLs to bypass browser caching. Replace only `index.html`, `style.css`, and `script.js` in your existing repository; keep existing `data/site.json` and `assets/`.
+
+
+## Random gallery (5 seconds)
+The gallery now shows 6 fixed polaroids, alternating top/bottom. Every 5 seconds it fades out, randomly selects the next 6 photos from `data/site.json` memories, and fades in. No horizontal scrolling. Change `GALLERY_HOLD_MS` in `script.js` to adjust the display duration. To update an existing website, replace only `index.html`, `style.css`, and `script.js`; preserve your existing `data/site.json` and `assets/` folder.

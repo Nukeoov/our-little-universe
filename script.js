@@ -16,36 +16,89 @@ function render() {
   $('loveNote').textContent=siteData.loveNote;
   const memories=[...(siteData.memories||[])].sort((a,b)=>a.date.localeCompare(b.date));
   $('timelineList').innerHTML=memories.length?memories.map(m=>`<article class="timeline-entry"><div class="memory-image"><img loading="lazy" src="${imageSafe(m.image)}" alt="${escapeHTML(m.place)}"></div><div class="memory-copy"><div class="memory-date">♡ ${escapeHTML(dateDisplay(m.date))}</div><h3 class="memory-place">📍 ${escapeHTML(m.place)}</h3><p>${escapeHTML(m.caption)}</p></div></article>`).join(''):'<p style="text-align:center">Chưa có kỷ niệm nào. Nhấn + để thêm nhé ♡</p>';
-  // Six staggered polaroids per seamless loop, randomized from saved memories.
-  // The duplicate loop is identical so the marquee never jumps at its boundary.
-  const track = $('photoTrack');
-  if (memories.length) {
-    const shuffle = (array) => {
-      const copy = [...array];
-      for (let i = copy.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [copy[i], copy[j]] = [copy[j], copy[i]];
-      }
-      return copy;
-    };
-    const pool = shuffle(memories);
-    const selected = [];
-    for (let i = 0; i < 6; i++) {
-      if (i > 0 && i % pool.length === 0) pool.splice(0, pool.length, ...shuffle(memories));
-      selected.push(pool[i % pool.length]);
-    }
-    const tilts = [-5, 3, -3, 5, -4, 2];
-    const cards = selected.map((m, i) => `
-      <figure class="polaroid ${i % 2 === 0 ? 'up' : 'down'}" style="--tilt:${tilts[i]}deg">
-        <img loading="lazy" src="${imageSafe(m.image)}" alt="${escapeHTML(m.place)}">
-        <figcaption>♡ ${escapeHTML(m.place)}</figcaption>
-      </figure>`).join('');
-    track.innerHTML = `<div class="gallery-loop">${cards}</div><div class="gallery-loop" aria-hidden="true">${cards}</div>`;
-  } else {
-    track.innerHTML = '';
-  }
+  // Gallery: display 6 stationary, alternating-height photos for 5 seconds,
+  // fade them out, then show another randomly selected set.
+  startRandomGallery(memories);
   tick();
 }
+
+// Gallery settings: change these two values to customize the slideshow.
+const GALLERY_HOLD_MS = 5000;  // 5 seconds with each set visible
+const GALLERY_FADE_MS = 600;   // smooth crossfade between sets
+let galleryTimer = null;
+let galleryFadeTimer = null;
+let galleryBag = [];
+let gallerySourceKey = '';
+let galleryLastId = null;
+
+function randomShuffle(items) {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function chooseGalleryPhotos(memories) {
+  // Use each available memory before repeating it wherever possible.
+  const sourceKey = memories.map(m => `${m.id || ''}:${m.image || ''}`).join('|');
+  if (sourceKey !== gallerySourceKey) {
+    gallerySourceKey = sourceKey;
+    galleryBag = [];
+    galleryLastId = null;
+  }
+  const selected = [];
+  for (let i = 0; i < 6; i++) {
+    if (!galleryBag.length) {
+      galleryBag = randomShuffle(memories);
+      if (galleryBag.length > 1 && galleryBag[0] === galleryLastId) {
+        [galleryBag[0], galleryBag[1]] = [galleryBag[1], galleryBag[0]];
+      }
+    }
+    const picked = galleryBag.shift();
+    selected.push(picked);
+    galleryLastId = picked;
+  }
+  return selected;
+}
+
+function drawGallery(memories) {
+  const track = $('photoTrack');
+  const photos = chooseGalleryPhotos(memories);
+  const tilts = [-4, 4, -3, 3, -5, 4];
+  track.innerHTML = photos.map((m, i) => `
+    <figure class="polaroid ${i % 2 === 0 ? 'up' : 'down'}" style="--tilt:${tilts[i]}deg">
+      <img src="${imageSafe(m.image)}" alt="${escapeHTML(m.place || 'Our memories')}" loading="eager">
+      <figcaption>♡ ${escapeHTML(m.place || 'Our memories')}</figcaption>
+    </figure>
+  `).join('');
+}
+
+function startRandomGallery(memories) {
+  clearTimeout(galleryTimer);
+  clearTimeout(galleryFadeTimer);
+  const track = $('photoTrack');
+  track.classList.remove('gallery-fading');
+  if (!memories.length) {
+    track.innerHTML = '<p class="gallery-empty">Thêm kỷ niệm đầu tiên để xem ảnh ở đây nhé ♡</p>';
+    return;
+  }
+
+  drawGallery(memories);
+  const cycle = () => {
+    galleryTimer = setTimeout(() => {
+      track.classList.add('gallery-fading');
+      galleryFadeTimer = setTimeout(() => {
+        drawGallery(memories);
+        track.classList.remove('gallery-fading');
+        cycle();
+      }, GALLERY_FADE_MS);
+    }, GALLERY_HOLD_MS);
+  };
+  cycle();
+}
+
 function tick() {
   const start = siteData?.startDate;
   if (!start) {
