@@ -15,23 +15,27 @@
 /* Floating memories v3: six staggered cards, smooth gentle continuous motion. */
 .gallery-section { padding:90px 0 90px; overflow:hidden; }
 .photo-lane { margin-top:48px; overflow:hidden; mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent); -webkit-mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent); }
-.photo-track { display:flex; gap:0; width:max-content; align-items:flex-start; padding:36px 0 48px; animation:marquee 78s linear infinite; will-change:transform; }
+.photo-track { display:flex; gap:0; width:max-content; align-items:flex-start; padding:36px 0 48px; animation:marquee 780s linear infinite; will-change:transform; }
 .photo-lane:hover .photo-track { animation-play-state:running; }
 .gallery-loop { display:flex; gap:28px; align-items:flex-start; padding-right:28px; flex-shrink:0; }
 .polaroid { width:190px; flex-shrink:0; border-radius:4px; transform:translateY(var(--offset-y,0px)) rotate(var(--tilt,0deg)); transition:filter .25s ease; }
-.polaroid.up { --offset-y:-24px; }
-.polaroid.down { --offset-y:34px; }
+.polaroid.up { --offset-y:-34px; }
+.polaroid.down { --offset-y:82px; }
 .polaroid img { height:170px; }
 .polaroid:hover { filter:brightness(1.04); }
 @keyframes marquee { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 @media (max-width:768px) {
-  .photo-track { animation-duration:68s; padding:28px 0 40px; }
+  .photo-track { animation-duration:680s; padding:38px 0 55px; }
   .gallery-loop { gap:20px; padding-right:20px; }
   .polaroid { width:150px; }
   .polaroid img { height:135px; }
-  .polaroid.up { --offset-y:-14px; }
-  .polaroid.down { --offset-y:20px; }
+  .polaroid.up { --offset-y:-20px; }
+  .polaroid.down { --offset-y:48px; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .photo-track { animation-duration:180s; }
+  .photo-track { animation:none; transform:none; }
 }
+
+/* Room for clearly staggered upper/lower scrapbook photos */
+.gallery-section .photo-lane { padding-top:35px; padding-bottom:105px; margin-bottom:-45px; }
+@media(max-width:768px){.gallery-section .photo-lane{padding-top:20px;padding-bottom:70px;margin-bottom:-30px;}}

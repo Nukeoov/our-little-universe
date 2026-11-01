@@ -92,3 +92,7 @@ Trang dùng font Google Fonts (có fallback nếu offline), không yêu cầu c�
 - For 6 different photos, first upload at least 6 distinct memories using the website's `+` editor. With fewer than 6, some photos repeat.
 - The **YEARS** counter from the previous version is included.
 - When updating your existing GitHub repo, replace only `index.html`, `style.css`, and `script.js`. **Do not overwrite `data/site.json` or `assets/`**, which may contain your real memories.
+
+## Slow zigzag floating gallery
+
+6 photo cards are arranged in an alternating upper/lower line, scrolling right-to-left in 780 seconds per cycle on desktop (680 seconds on mobile). The 6-photo order is shuffled on page load, with photo sources drawn from `data/site.json` memories. Add new photos through the existing memory editor; no need to modify gallery code. For accessibility, reduced-motion settings stop the gallery animation.
