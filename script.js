@@ -24,9 +24,10 @@ function render() {
 
 // Gallery settings: change these two values to customize the slideshow.
 const GALLERY_HOLD_MS = 5000;  // 5 seconds with each set visible
-const GALLERY_FADE_MS = 600;   // smooth crossfade between sets
+const GALLERY_FADE_MS = 1500; // 1.5s fade-out and 1.5s fade-in
 let galleryTimer = null;
 let galleryFadeTimer = null;
+let galleryRevealTimer = null;
 let galleryBag = [];
 let gallerySourceKey = '';
 let galleryLastId = null;
@@ -63,9 +64,9 @@ function chooseGalleryPhotos(memories) {
   return selected;
 }
 
-function drawGallery(memories) {
+function drawGallery(memories, chosenPhotos = null) {
   const track = $('photoTrack');
-  const photos = chooseGalleryPhotos(memories);
+  const photos = chosenPhotos || chooseGalleryPhotos(memories);
   const tilts = [-4, 4, -3, 3, -5, 4];
   track.innerHTML = photos.map((m, i) => `
     <figure class="polaroid ${i % 2 === 0 ? 'up' : 'down'}" style="--tilt:${tilts[i]}deg">
@@ -78,6 +79,7 @@ function drawGallery(memories) {
 function startRandomGallery(memories) {
   clearTimeout(galleryTimer);
   clearTimeout(galleryFadeTimer);
+  clearTimeout(galleryRevealTimer);
   const track = $('photoTrack');
   track.classList.remove('gallery-fading');
   if (!memories.length) {
@@ -88,11 +90,21 @@ function startRandomGallery(memories) {
   drawGallery(memories);
   const cycle = () => {
     galleryTimer = setTimeout(() => {
+      // Preload the next random group while the current photos fade away.
+      const nextPhotos = chooseGalleryPhotos(memories);
+      nextPhotos.forEach(m => {
+        const photo = new Image();
+        photo.src = imageSafe(m.image);
+      });
       track.classList.add('gallery-fading');
       galleryFadeTimer = setTimeout(() => {
-        drawGallery(memories);
-        track.classList.remove('gallery-fading');
-        cycle();
+        drawGallery(memories, nextPhotos);
+        // Allow the browser to render the new images at opacity 0 first.
+        // Then fade the new set in gently instead of swapping abruptly.
+        galleryRevealTimer = setTimeout(() => {
+          track.classList.remove('gallery-fading');
+          cycle();
+        }, 60);
       }, GALLERY_FADE_MS);
     }, GALLERY_HOLD_MS);
   };

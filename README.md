@@ -104,3 +104,8 @@ Replaced conflicting previous photo animation CSS with one canonical 780-second 
 
 ## Random gallery (5 seconds)
 The gallery now shows 6 fixed polaroids, alternating top/bottom. Every 5 seconds it fades out, randomly selects the next 6 photos from `data/site.json` memories, and fades in. No horizontal scrolling. Change `GALLERY_HOLD_MS` in `script.js` to adjust the display duration. To update an existing website, replace only `index.html`, `style.css`, and `script.js`; preserve your existing `data/site.json` and `assets/` folder.
+
+
+## Soft fade slideshow (latest)
+
+Gallery: each group of 6 zigzag photos remains visible for 5 seconds. The old group fades out over 1.5 seconds, followed by the new random group fading in over 1.5 seconds. Edit `GALLERY_HOLD_MS` and `GALLERY_FADE_MS` in `script.js` and the opacity transition in `style.css` if desired. To update an existing published site, replace only `index.html`, `style.css`, and `script.js`. **Do not overwrite existing `data/site.json` or `assets/`**, which may contain your personal memories.
