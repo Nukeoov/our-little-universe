@@ -16,15 +16,76 @@ function render() {
   $('loveNote').textContent=siteData.loveNote;
   const memories=[...(siteData.memories||[])].sort((a,b)=>a.date.localeCompare(b.date));
   $('timelineList').innerHTML=memories.length?memories.map(m=>`<article class="timeline-entry"><div class="memory-image"><img loading="lazy" src="${imageSafe(m.image)}" alt="${escapeHTML(m.place)}"></div><div class="memory-copy"><div class="memory-date">♡ ${escapeHTML(dateDisplay(m.date))}</div><h3 class="memory-place">📍 ${escapeHTML(m.place)}</h3><p>${escapeHTML(m.caption)}</p></div></article>`).join(''):'<p style="text-align:center">Chưa có kỷ niệm nào. Nhấn + để thêm nhé ♡</p>';
-  let photos=memories.slice(); for(let i=photos.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[photos[i],photos[j]]=[photos[j],photos[i]];}
-  // The second copy makes an endless right-to-left loop with no visual jump.
-  if(photos.length) { const items=Array.from({length:Math.max(6,Math.ceil(8/photos.length)*photos.length)},(_,i)=>photos[i%photos.length]);
-   const markup=items.map((m,i)=>`<figure class="polaroid" style="--tilt:${[-5,3,-2,5,-4,2][i%6]}deg"><img loading="lazy" src="${imageSafe(m.image)}" alt="${escapeHTML(m.place)}"><figcaption>♡ ${escapeHTML(m.place)}</figcaption></figure>`).join(''); $('photoTrack').innerHTML=markup+markup;
-  } else {$('photoTrack').innerHTML='';}
+  // Six staggered polaroids per seamless loop, randomized from saved memories.
+  // The duplicate loop is identical so the marquee never jumps at its boundary.
+  const track = $('photoTrack');
+  if (memories.length) {
+    const shuffle = (array) => {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+    const pool = shuffle(memories);
+    const selected = [];
+    for (let i = 0; i < 6; i++) {
+      if (i > 0 && i % pool.length === 0) pool.splice(0, pool.length, ...shuffle(memories));
+      selected.push(pool[i % pool.length]);
+    }
+    const tilts = [-5, 3, -3, 5, -4, 2];
+    const cards = selected.map((m, i) => `
+      <figure class="polaroid ${i % 2 === 0 ? 'up' : 'down'}" style="--tilt:${tilts[i]}deg">
+        <img loading="lazy" src="${imageSafe(m.image)}" alt="${escapeHTML(m.place)}">
+        <figcaption>♡ ${escapeHTML(m.place)}</figcaption>
+      </figure>`).join('');
+    track.innerHTML = `<div class="gallery-loop">${cards}</div><div class="gallery-loop" aria-hidden="true">${cards}</div>`;
+  } else {
+    track.innerHTML = '';
+  }
   tick();
 }
-function tick(){const start=siteData?.startDate; if(!start){$('countDays').textContent='—';['countHours','countMinutes','countSeconds'].forEach(i=>$(i).textContent='00');$('sinceLabel').textContent='Chọn ngày bắt đầu yêu trong phần chỉnh sửa ♡';return;}
- const t = new Date(`${start}T00:00:00`);if(Number.isNaN(t.getTime()))return;let diff=Math.max(0,Date.now()-t.getTime());const days=Math.floor(diff/86400000);diff%=86400000;const h=Math.floor(diff/3600000);diff%=3600000;const m=Math.floor(diff/60000);const s=Math.floor(diff%60000/1000);$('countDays').textContent=days; $('countHours').textContent=String(h).padStart(2,'0');$('countMinutes').textContent=String(m).padStart(2,'0');$('countSeconds').textContent=String(s).padStart(2,'0');$('sinceLabel').textContent=`since ${dateDisplay(start)} ♡`;}
+function tick() {
+  const start = siteData?.startDate;
+  if (!start) {
+    $('countYears').textContent = '0';
+    $('countDays').textContent = '—';
+    ['countHours','countMinutes','countSeconds'].forEach(id => $(id).textContent = '00');
+    $('sinceLabel').textContent = 'Chọn ngày bắt đầu yêu trong phần chỉnh sửa ♡';
+    return;
+  }
+
+  const began = new Date(`${start}T00:00:00`);
+  if (Number.isNaN(began.getTime())) return;
+  const now = new Date();
+  let years = Math.max(0, now.getFullYear() - began.getFullYear());
+
+  // Calendar anniversaries, not a fixed 365-day estimate.
+  // Feb 29 anniversaries fall on Mar 1 in non-leap years.
+  const anniversary = (numberOfYears) => new Date(
+    began.getFullYear() + numberOfYears,
+    began.getMonth(),
+    began.getDate()
+  );
+  while (years > 0 && anniversary(years) > now) years--;
+  while (anniversary(years + 1) <= now) years++;
+
+  let remaining = Math.max(0, now.getTime() - anniversary(years).getTime());
+  const days = Math.floor(remaining / 86400000);
+  remaining %= 86400000;
+  const hours = Math.floor(remaining / 3600000);
+  remaining %= 3600000;
+  const minutes = Math.floor(remaining / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+
+  $('countYears').textContent = years;
+  $('countDays').textContent = days;
+  $('countHours').textContent = String(hours).padStart(2, '0');
+  $('countMinutes').textContent = String(minutes).padStart(2, '0');
+  $('countSeconds').textContent = String(seconds).padStart(2, '0');
+  $('sinceLabel').textContent = `since ${dateDisplay(start)} ♡`;
+}
 setInterval(tick,1000);
 $('openAdmin').onclick=()=>{$('toolChooser').hidden=!$('toolChooser').hidden};
 $('chooseMemory').onclick=()=>{$('toolChooser').hidden=true;$('editorDialog').showModal();};

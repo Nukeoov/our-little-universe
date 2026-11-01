@@ -83,3 +83,12 @@ README.md
 ```
 
 Trang dùng font Google Fonts (có fallback nếu offline), không yêu cầu cài package/Node.js.
+
+
+## Gallery update (latest)
+- 6 polaroids in an alternating high/low pattern, with a slower 78-second smooth loop (68 seconds on mobile).
+- Photos are shuffled from existing `data/site.json` memories on page load and after adding memories.
+- The same 6 cards are duplicated for a seamless, continuous animation; they are **not** re-randomized mid-transition.
+- For 6 different photos, first upload at least 6 distinct memories using the website's `+` editor. With fewer than 6, some photos repeat.
+- The **YEARS** counter from the previous version is included.
+- When updating your existing GitHub repo, replace only `index.html`, `style.css`, and `script.js`. **Do not overwrite `data/site.json` or `assets/`**, which may contain your real memories.
