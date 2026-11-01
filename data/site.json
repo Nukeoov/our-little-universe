@@ -1,0 +1,11 @@
+{
+  "personOne": {"name": "You", "location": "Houston, TX", "photo": "assets/person-one.svg"},
+  "personTwo": {"name": "Her", "location": "Daytona Beach, FL", "photo": "assets/person-two.svg"},
+  "loveNote": "Dù ở cách xa nhau, chúng mình vẫn chọn cùng nhau viết nên những câu chuyện thật đẹp, từng ngày một.",
+  "startDate": "",
+  "memories": [
+    {"id": "first-chapter", "date": "2026-01-01", "place": "Our first chapter", "caption": "Đây là chỗ dành cho kỷ niệm đầu tiên của chúng mình. Hãy thay bằng ảnh và câu chuyện thật nhé ♡", "image": "assets/memory-01.svg"},
+    {"id": "sweet-moments", "date": "2026-02-14", "place": "Little things, big love", "caption": "Một góc nhỏ dành cho những điều giản dị mà đáng yêu.", "image": "assets/memory-02.svg"},
+    {"id": "more-to-come", "date": "2026-03-01", "place": "More adventures ahead", "caption": "Chúng mình còn cả một hành trình đáng nhớ ở phía trước!", "image": "assets/memory-03.svg"}
+  ]
+}
